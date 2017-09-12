@@ -2,9 +2,12 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 	attribute vec3 vertexPosition;
 	attribute vec3 vertexColor;
 	varying vec4 color;
+	uniform vec3 trianglePosition;
+	uniform vec3 trianglePosition2;
+	uniform int triangleScale;
 
 	void main(void) {
-		gl_Position = vec4(vertexPosition, 1);
+		gl_Position = vec4(vertexPosition, 1) + vec4(trianglePosition2, 1);
 		color = vec4(vertexColor, 1);
 	}
 `;

@@ -5,6 +5,15 @@ let Program = function(gl, vertexShader, fragmentShader) {
   gl.attachShader(this.glProgram, vertexShader.glShader);
   gl.attachShader(this.glProgram, fragmentShader.glShader);
 
+  // var trianglePositionLocation = gl.getUniformLocation(this.solidProgram.glProgram, "trianglePosition");
+  //
+  // if (trianglePositionLocation < 0)
+  //   console.log("Could not find uniform trianglePosition.");
+  // else {
+  //   gl.uniform3f(trianglePositionLocation,
+  //   this.trianglePosition.x, this.trianglePosition.y, this.trianglePosition.z);
+  // };
+
   gl.bindAttribLocation(this.glProgram, 0, 'vertexPosition');
   gl.bindAttribLocation(this.glProgram, 1, 'vertexColor');
 
