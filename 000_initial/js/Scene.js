@@ -43,7 +43,7 @@ Scene.prototype.update = function(gl, keysPressed) {
 
   this.trianglePosition2.x -= 0.1 * dt;
 
-  var trianglePositionLocation = gl.getUniformLocation(this.solidProgram.glProgram, "trianglePosition2");
+  var trianglePositionLocation = gl.getUniformLocation(this.solidProgram.glProgram, "trianglePosition");
 
   if (trianglePositionLocation < 0)
     console.log("Could not find uniform trianglePosition2.");
