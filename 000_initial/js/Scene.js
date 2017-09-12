@@ -18,10 +18,13 @@ Scene.prototype.update = function(gl, keysPressed) {
   let dt = (timeAtThisFrame - this.timeAtLastFrame) / 1000.0;
   this.timeAtLastFrame = timeAtThisFrame;
 
-  // if (this.trianglePosition.x > viewport.width / 2) {
-  //   this.trianglePosition.x = 0;
-  // }
-  this.trianglePosition.x += 0.1 * dt;
+  this.trianglePosition.x += 0.5 * dt;
+  if (this.trianglePosition.x > 2.5) {
+    this.trianglePosition.x = -2.5;
+  }
+  console.log("triang pos: " + this.trianglePosition.x + " and screen width: " + window.screen.width);
+
+  this.trianglePosition2.x -= 0.1 * dt;
 
   // clear the screen
   gl.clearColor(0, 0, 0.8, 1.0);
@@ -40,8 +43,6 @@ Scene.prototype.update = function(gl, keysPressed) {
   };
 
   this.triangleGeometry.draw();
-
-  this.trianglePosition2.x -= 0.1 * dt;
 
   var trianglePositionLocation = gl.getUniformLocation(this.solidProgram.glProgram, "trianglePosition");
 
