@@ -14,6 +14,7 @@ let App = function(canvas, overlay) {
 	this.gl.pendingResources = {};
 	// create a simple scene
 	this.scene = new Scene(this.gl);
+	this.keysPressed = {};
 };
 
 // match WebGL rendering resolution and viewport to the canvas size
@@ -23,13 +24,16 @@ App.prototype.resize = function() {
 	this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 };
 
+//closure function?
 App.prototype.registerEventHandlers = function() {
 	let theApp = this;
 	document.onkeydown = function(event) {
 		//jshint unused:false
+		theApp.keysPressed[keyboardMap[event.keyCode]] = true;
 	};
 	document.onkeyup = function(event) {
 		//jshint unused:false
+		theApp.keysPressed[keyboardMap[event.keyCode]] = false;
 	};
 	this.canvas.onmousedown = function(event) {
 		//jshint unused:false
@@ -58,7 +62,7 @@ App.prototype.update = function() {
 	let pendingResourceNames = Object.keys(this.gl.pendingResources);
 	if (pendingResourceNames.length === 0) {
 		// animate and draw scene
-		this.scene.update(this.gl);
+		this.scene.update(this.gl, this.keysPressed);
 		this.overlay.innerHTML = "Ready.";
 	} else {
 		this.overlay.innerHTML = "Loading: " + pendingResourceNames;

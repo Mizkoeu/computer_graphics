@@ -16,4 +16,11 @@ let Program = function(gl, vertexShader, fragmentShader) {
 
 Program.prototype.commit = function(){
 	this.gl.useProgram(this.glProgram);
+  // var trianglePositionLocation = gl.getUniformLocation(this.glProgram, "trianglePosition");
+  // if (trianglePositionLocation < 0)
+  //   console.log("Could not find uniform trianglePosition.");
+  // else {
+  //   gl.uniform3f(trianglePositionLocation,
+  //   this.trianglePosition.x, this.trianglePosition.y, this.trianglePosition.z);
+  // };
 };
