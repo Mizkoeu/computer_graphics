@@ -6,7 +6,7 @@ let Scene = function(gl) {
   this.triangleGeometry = new TriangleGeometry(gl);
   //this.triangleGeometry2 = new TriangleGeometry(gl);
   this.trianglePosition = new Vec3(0, 0, 0);
-  this.triangleScale = .2;
+  this.triangleScale = .15;
   this.triangleRotation = 0.0;
   this.triangleRotation2 = 0.0;
   this.trianglePosition2 = {x:1, y:1, z:0};
@@ -27,23 +27,23 @@ Scene.prototype.update = function(gl, keysPressed) {
   this.trianglePosition2.x -= 0.1 * dt;
   this.triangleRotation2 += 0.2;
   // clear the screen
-  gl.clearColor(.5, .5, .5, 1.0);
+  gl.clearColor(.7, .8, .1, 1.0);
   gl.clearDepth(1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   this.solidProgram.commit();
 
   if (keysPressed.W === true) {
-    this.trianglePosition.add(new Vec3(0, .5 * dt, 0));
+    this.trianglePosition.add(new Vec3(0, 1.8 * dt, 0));
   }
   if (keysPressed.D === true) {
-    this.trianglePosition.add(new Vec3(.5 * dt, 0, 0));
+    this.trianglePosition.add(new Vec3(1.8 * dt, 0, 0));
   }
   if (keysPressed.A === true) {
-    this.trianglePosition.add(new Vec3(-.5 * dt, 0, 0));
+    this.trianglePosition.add(new Vec3(-1.8 * dt, 0, 0));
   }
   if (keysPressed.S === true) {
-    this.trianglePosition.add(new Vec3(0, -.5 * dt, 0));
+    this.trianglePosition.add(new Vec3(0, -1.8 * dt, 0));
   }
   if (keysPressed.RIGHT === true) {
     this.triangleRotation += .1;
