@@ -1,8 +1,13 @@
 "use strict";
 let Scene = function(gl) {
+
   this.vsIdle = new Shader(gl, gl.VERTEX_SHADER, "idle_vs.essl");
   this.fsSolid = new Shader(gl, gl.FRAGMENT_SHADER, "solid_fs.essl");
   this.solidProgram = new Program(gl, this.vsIdle, this.fsSolid);
+
+  this.material = new Material(gl, this.solidProgram);
+  this.material.solidColor.set(0.1, 0.3, 0.7, 0);
+
   this.triangleGeometry = new TriangleGeometry(gl);
   //this.triangleGeometry2 = new TriangleGeometry(gl);
   this.trianglePosition = new Vec3(0, 0, 0);
@@ -26,6 +31,9 @@ Scene.prototype.update = function(gl, keysPressed) {
 
   this.trianglePosition2.x -= 0.1 * dt;
   this.triangleRotation2 += 0.2;
+
+  this.triangleRotation += 0.01 * dt;
+
   // clear the screen
   gl.clearColor(.7, .8, .1, 1.0);
   gl.clearDepth(1.0);
@@ -61,31 +69,37 @@ Scene.prototype.update = function(gl, keysPressed) {
 
 
   if (this.trianglePosition.x > 2.5) {
-    this.trianglePosition = new Vec3(-2.5, 0, 0);
+    this.trianglePosition = new Vec3(-2.5, this.trianglePosition.y, 0);
   }
 
-  var modelMatrixUniformLocation = gl.getUniformLocation(this.solidProgram.glProgram, "modelMatrix");
-  if (modelMatrixUniformLocation < 0)
-    console.log("Could not find uniform modelMatrixUniformLocation.");
-  else {
-    var modelMatrix = new Mat4().rotate(this.triangleRotation)
-                                .translate(this.trianglePosition)
-                                .scale(this.triangleScale);
-    modelMatrix.commit(gl, modelMatrixUniformLocation);
-  }
-
+  this.material.modelMatrix.set().rotate(this.triangleRotation)
+                                 .translate(this.trianglePosition)
+                                 .scale(this.triangleScale);
+  this.material.commit();
   this.triangleGeometry.draw();
 
-  var modelMatrixUniformLocation = gl.getUniformLocation(this.solidProgram.glProgram, "modelMatrix");
-  if (modelMatrixUniformLocation < 0)
-    console.log("Could not find uniform modelMatrixUniformLocation.");
-  else {
-    var modelMatrix = new Mat4().translate(new Vec3(2, 0, 0))
-                                .rotate(this.triangleRotation2)
-                                .translate(this.trianglePosition)
-                                .scale(this.triangleScale);
-    modelMatrix.commit(gl, modelMatrixUniformLocation);
-  }
-
-  this.triangleGeometry.draw();
+  // var modelMatrixUniformLocation = gl.getUniformLocation(this.solidProgram.glProgram, "modelMatrix");
+  // if (modelMatrixUniformLocation < 0)
+  //   console.log("Could not find uniform modelMatrixUniformLocation.");
+  // else {
+  //   var modelMatrix = new Mat4().rotate(this.triangleRotation)
+  //                               .translate(this.trianglePosition)
+  //                               .scale(this.triangleScale);
+  //   modelMatrix.commit(gl, modelMatrixUniformLocation);
+  // }
+  //
+  // this.triangleGeometry.draw();
+  //
+  // var modelMatrixUniformLocation = gl.getUniformLocation(this.solidProgram.glProgram, "modelMatrix");
+  // if (modelMatrixUniformLocation < 0)
+  //   console.log("Could not find uniform modelMatrixUniformLocation.");
+  // else {
+  //   var modelMatrix = new Mat4().translate(new Vec3(2, 0, 0))
+  //                               .rotate(this.triangleRotation2)
+  //                               .translate(this.trianglePosition)
+  //                               .scale(this.triangleScale);
+  //   modelMatrix.commit(gl, modelMatrixUniformLocation);
+  // }
+  //
+  // this.triangleGeometry.draw();
 };

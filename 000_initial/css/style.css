@@ -15,9 +15,13 @@
 }
 
 #overlay {
+	font-size: 4vw;
+	font-family: Georgia;
+	font-weight: bold;
     position: absolute;
-    left: 10px;
-    top: 10px;
+		width: 100%;
+		text-align: center;
+		top: 20%;
     z-index: 20;
 }
 
@@ -29,7 +33,6 @@
 	left: 0;
 	bottom: 0;
 	right: 0;
-    z-index: 10;
+    z-index: 30;
     overflow: hidden;
 }
-
