@@ -5,18 +5,29 @@ let Scene = function(gl) {
   this.fsSolid = new Shader(gl, gl.FRAGMENT_SHADER, "solid_fs.essl");
   this.solidProgram = new Program(gl, this.vsIdle, this.fsSolid);
 
-  this.material = new Material(gl, this.solidProgram);
-  this.material.solidColor.set(0.1, 0.3, 0.7, 0);
-
+  this.rectGeometry = new RectGeometry(gl);
   this.triangleGeometry = new TriangleGeometry(gl);
   //this.triangleGeometry2 = new TriangleGeometry(gl);
-  this.trianglePosition = new Vec3(0, 0, 0);
-  this.triangleScale = .15;
+  this.trianglePosition = new Vec3(0, .55, 0);
+  this.triangleScale = .8;
   this.triangleRotation = 0.0;
   this.triangleRotation2 = 0.0;
   this.trianglePosition2 = {x:1, y:1, z:0};
   this.timeAtLastFrame = new Date().getTime();
 
+  this.material = new Material(gl, this.solidProgram);
+  this.material.solidColor.set(0.1, 0.3, 0.7, 1);
+
+  //Create a camera
+  this.camera = new OrthoCamera();
+
+  this.gameObjects = [];
+
+  for (var i=0;i<10;i++) {
+    var square = new GameObject(new Mesh(this.rectGeometry, this.material));
+    square.position.add(new Vec3(.1*i, 0.1*i, 0));
+    this.gameObjects.push(square);
+  }
 };
 
 Scene.prototype.update = function(gl, keysPressed) {
@@ -27,12 +38,12 @@ Scene.prototype.update = function(gl, keysPressed) {
   this.timeAtLastFrame = timeAtThisFrame;
 
 
-  console.log("triang pos: " + this.trianglePosition.x + " and screen width: " + window.screen.width);
+  //console.log("triang pos: " + this.trianglePosition.x + " and screen width: " + window.screen.width);
 
   this.trianglePosition2.x -= 0.1 * dt;
   this.triangleRotation2 += 0.2;
 
-  this.triangleRotation += 0.01 * dt;
+  this.triangleRotation += 0.1 * dt;
 
   // clear the screen
   gl.clearColor(.7, .8, .1, 1.0);
@@ -41,30 +52,31 @@ Scene.prototype.update = function(gl, keysPressed) {
 
   this.solidProgram.commit();
 
+  var testCam = this.camera;
+
   if (keysPressed.W === true) {
-    this.trianglePosition.add(new Vec3(0, 1.8 * dt, 0));
+    this.gameObjects[0].position.add(new Vec3(0, 1.8 * dt, 0));
   }
   if (keysPressed.D === true) {
-    this.trianglePosition.add(new Vec3(1.8 * dt, 0, 0));
+    this.gameObjects[0].position.add(new Vec3(1.8 * dt, 0, 0));
   }
   if (keysPressed.A === true) {
-    this.trianglePosition.add(new Vec3(-1.8 * dt, 0, 0));
+    this.gameObjects[0].position.add(new Vec3(-1.8 * dt, 0, 0));
   }
   if (keysPressed.S === true) {
-    this.trianglePosition.add(new Vec3(0, -1.8 * dt, 0));
+    this.gameObjects[0].position.add(new Vec3(0, -1.8 * dt, 0));
   }
   if (keysPressed.RIGHT === true) {
-    this.triangleRotation += .1;
-
+    this.camera.position.add(new Vec2(0.01, 0));
   }
   if (keysPressed.LEFT === true) {
-    this.triangleRotation -= .1;
+    this.camera.position.add(new Vec2(-0.01, 0));
   }
   if (keysPressed.Q === true) {
-    this.triangleScale *= 1.2;
+    this.gameObjects[1].scale.mul(1.1);
   }
   if (keysPressed.E === true) {
-    this.triangleScale *= .8;
+    this.gameObjects[1].scale.mul(0.9);
   }
 
 
@@ -72,12 +84,19 @@ Scene.prototype.update = function(gl, keysPressed) {
     this.trianglePosition = new Vec3(-2.5, this.trianglePosition.y, 0);
   }
 
-  this.material.modelMatrix.set().rotate(this.triangleRotation)
-                                 .translate(this.trianglePosition)
-                                 .scale(this.triangleScale);
-  this.material.commit();
-  this.triangleGeometry.draw();
 
+  this.gameObjects.forEach(function(obj) {
+    obj.draw(testCam);
+  });
+//--> Using MATERIAL to SET MATRIX <---
+  // this.material.modelViewProjMatrix.set().rotate(this.triangleRotation)
+  //                                .translate(this.trianglePosition)
+  //                                .scale(this.triangleScale);
+  // this.material.commit();
+  // this.triangleGeometry.draw();
+
+
+//--> REALLY LOW LEVEL CODES, GO FIGURE IT OUT <---
   // var modelMatrixUniformLocation = gl.getUniformLocation(this.solidProgram.glProgram, "modelMatrix");
   // if (modelMatrixUniformLocation < 0)
   //   console.log("Could not find uniform modelMatrixUniformLocation.");

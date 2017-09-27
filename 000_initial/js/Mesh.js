@@ -1,5 +1,5 @@
 "use strict"
-Let Mesh = function (geometry, material) {
+let Mesh = function(geometry, material) {
   this.geometry = geometry;
   this.material = material;
 };

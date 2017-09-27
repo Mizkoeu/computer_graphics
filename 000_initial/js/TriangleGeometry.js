@@ -7,9 +7,9 @@ let TriangleGeometry = function(gl) {
   gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER,
     new Float32Array([
-    	-0.4, -0.4, 0.5,
-    	-0.4,  0.4, 0.5,
-      0.4,  0.0, 0.5,
+    	-0.4, -0.4, 0,
+    	-0.4,  0.4, 0,
+      0.4,  0.0, 0,
     ]),
     gl.STATIC_DRAW);
 

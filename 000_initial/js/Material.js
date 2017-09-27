@@ -14,7 +14,7 @@ let Material = function(gl, program) {
   return new Proxy(this, {
     get : function(target, name){
       if(!(name in target)){
-        console.error(​"WARNING: Ignoring attempt to access material property '" +
+        console.error("WARNING: Ignoring attempt to access material property '" +
             name + "'. Is '" + name + "' an unused uniform?" );
         return Material.dummy;
       }
