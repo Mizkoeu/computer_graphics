@@ -5,11 +5,14 @@ let Scene = function(gl) {
   this.fsSolid = new Shader(gl, gl.FRAGMENT_SHADER, "solid_fs.essl");
   this.solidProgram = new Program(gl, this.vsIdle, this.fsSolid);
 
+  //this.grid = new Grid(10, 10);
+
+  this.heartgeometry = new HeartGeometry(gl);
+  this.stargeometry = new StarGeometry(gl);
   this.rectGeometry = new RectGeometry(gl);
   this.triangleGeometry = new TriangleGeometry(gl);
-  //this.triangleGeometry2 = new TriangleGeometry(gl);
   this.trianglePosition = new Vec3(0, .55, 0);
-  this.triangleScale = .8;
+  this.triangleScale = 1;
   this.triangleRotation = 0.0;
   this.triangleRotation2 = 0.0;
   this.trianglePosition2 = {x:1, y:1, z:0};
@@ -22,11 +25,18 @@ let Scene = function(gl) {
   this.camera = new OrthoCamera();
 
   this.gameObjects = [];
+  this.inventory = [this.rectGeometry, this.stargeometry, this.heartgeometry];
 
-  for (var i=0;i<10;i++) {
-    var square = new GameObject(new Mesh(this.rectGeometry, this.material));
-    square.position.add(new Vec3(.1*i, 0.1*i, 0));
-    this.gameObjects.push(square);
+  for (var i=0;i<100;i++) {
+    var row = Math.floor(i/10);
+    var col = i%10;
+    var geo = this.inventory[Math.floor(Math.random() * 3)];
+    var star = new GameObject(new Mesh(geo, this.material));
+    star.isRotate = Math.floor(Math.random() * 1.1);
+    star.color.set(Math.random(0, .5), Math.random(0, 1), .5, .8);
+    //star.scale.set(new Vec3(.8, .8, .8));
+    star.position.set(.2*row - .8, .2*col - .8, 0);
+    this.gameObjects.push(star);
   }
 };
 
@@ -86,6 +96,9 @@ Scene.prototype.update = function(gl, keysPressed) {
 
 
   this.gameObjects.forEach(function(obj) {
+    if (obj.isRotate == true) {
+      obj.orientation += 0.01;
+    }
     obj.draw(testCam);
   });
 //--> Using MATERIAL to SET MATRIX <---

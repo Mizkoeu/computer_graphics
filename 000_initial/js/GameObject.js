@@ -7,6 +7,8 @@ let GameObject = function(mesh) {
   this.scale = new Vec3(1, 1, 1);
   this.color = new Vec4(0, 0, 0, 0);
 
+  this.isRotate = false;
+  this.appear = true;
   this.modelMatrix = new Mat4();
 };
 
