@@ -4,35 +4,47 @@
 }
 
 #container {
-    position: absolute;
+  position: absolute;
 	width: 100%;
 	height: 100%;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	right: 0;
-    overflow: hidden;
+  overflow: hidden;
+}
+
+#background {
+	position: absolute;
+	background-color: red;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+  overflow: hidden;
 }
 
 #overlay {
 	font-size: 4vw;
 	font-family: Georgia;
 	font-weight: bold;
-    position: absolute;
-		width: 100%;
-		text-align: center;
-		top: 20%;
-    z-index: 20;
+  position: absolute;
+	width: 100%;
+	text-align: center;
+	top: 20%;
+  z-index: 20;
 }
 
 #canvas {
-    position: absolute;
+  position: absolute;
 	width: 100%;
 	height: 100%;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	right: 0;
-    z-index: 30;
-    overflow: hidden;
+  z-index: 30;
+  overflow: hidden;
 }
