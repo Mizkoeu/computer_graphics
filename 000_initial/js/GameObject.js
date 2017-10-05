@@ -1,6 +1,6 @@
 "use strict"
-let GameObject = function(mesh) {
-  //this.type = type;
+let GameObject = function(id, mesh) {
+  this.id = id;
   this.mesh = mesh;
 
   this.position = new Vec3(0, 0, 0);
@@ -25,6 +25,8 @@ GameObject.prototype.draw = function(camera){
 //    from the modelMatrix (no camera yet) Operator = cannot be used. Use Mat4 methods set() and/or mul().
   this.mesh.material.modelViewProjMatrix.set().mul(this.modelMatrix).mul(camera.viewProjMatrix);
   this.mesh.material.solidColor.set(this.color);
-  //this.mesh.material.opacity.set(this.opacity);
+  if (this.id === 2) {
+    this.mesh.material.opacity.set(this.opacity);
+  }
   this.mesh.draw();
 };

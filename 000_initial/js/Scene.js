@@ -1,20 +1,22 @@
 "use strict";
 let Scene = function(gl) {
+  //time
+  this.timeAtLastFrame = new Date().getTime();
 
+  //shader & programs
   this.vsIdle = new Shader(gl, gl.VERTEX_SHADER, "idle_vs.essl");
   this.fsSolid = new Shader(gl, gl.FRAGMENT_SHADER, "solid_fs.essl");
   this.pixSolid = new Shader(gl, gl.FRAGMENT_SHADER, "pulsate_fs.essl");
   this.solidProgram = new Program(gl, this.vsIdle, this.fsSolid);
   this.pulsateProgram = new Program(gl, this.vsIdle, this.pixSolid);
 
-  //this.grid = new Grid(10, 10);
-
+  //geometries
   this.heartgeometry = new HeartGeometry(gl);
   this.stargeometry = new StarGeometry(gl);
   this.rectGeometry = new RectGeometry(gl);
+  this.weirdGometry = new WeirdGeometry(gl);
 
-  this.timeAtLastFrame = new Date().getTime();
-
+  //materials
   this.material = new Material(gl, this.solidProgram);
   this.pulsateMaterial = new Material(gl, this.pulsateProgram);
   this.material.solidColor.set(0.1, 0.3, 0.7, 1);
@@ -22,19 +24,28 @@ let Scene = function(gl) {
   //Create a camera
   this.camera = new OrthoCamera();
 
+  //Create object array
   this.gameObjects = [];
-  this.inventory = [this.rectGeometry, this.stargeometry, this.heartgeometry];
+  this.gridNum = 10;
+  this.cellWidth = 0.18;
+  this.inventory = [new Mesh(this.rectGeometry, this.material),
+                    new Mesh(this.stargeometry, this.material),
+                    new Mesh(this.heartgeometry, this.pulsateMaterial),
+                    new Mesh(this.weirdGometry, this.material)];
 
-  for (var i=0;i<10;i++) {
+
+  for (var i=0;i<this.gridNum;i++) {
     this.gameObjects[i] = [];
-    for(var j=0;j<10;j++) {
-      var geo = this.inventory[Math.floor(Math.random() * 3)];
-      var star = new GameObject(new Mesh(geo, this.material));
-      star.isRotate = Math.floor(Math.random() * 1.1);
-      star.color.set(Math.random(0, .5), Math.random(0, 1), .5, .8);
-      //star.scale.set(new Vec3(.8, .8, .8));
-      star.position.set(.2*i - .8, .2*j - .8, 0);
-      this.gameObjects[i][j] = star;
+    for(var j=0;j<this.gridNum;j++) {
+      var id = Math.floor(Math.random() * 4);
+      var obj = new GameObject(id, this.inventory[id]);
+      if (id === 0) {
+        obj.isRotate = true;
+      }
+      obj.color.set(Math.random() * .5, Math.random(), .3, .8);
+      obj.scale.set(new Vec3(.8, .8, .8));
+      obj.position.set(this.cellWidth*(i-4.5), this.cellWidth*(4.5-j), 0);
+      this.gameObjects[i][j] = obj;
     }
   }
 };
@@ -48,15 +59,8 @@ Scene.prototype.update = function(gl, keysPressed) {
 
   console.log(timeAtThisFrame);
 
-  //console.log("triang pos: " + this.trianglePosition.x + " and screen width: " + window.screen.width);
-
-  this.trianglePosition2.x -= 0.1 * dt;
-  this.triangleRotation2 += 0.2;
-
-  this.triangleRotation += 0.1 * dt;
-
   // clear the screen
-  gl.clearColor(.7, .8, .1, 1.0);
+  gl.clearColor(.2, .3, .6, 1.0);
   gl.clearDepth(1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -66,16 +70,16 @@ Scene.prototype.update = function(gl, keysPressed) {
   var testCam = this.camera;
 
   if (keysPressed.W === true) {
-    this.gameObjects[0].position.add(new Vec3(0, 1.8 * dt, 0));
+    this.gameObjects[4][4].position.add(new Vec3(0, 1.8 * dt, 0));
   }
   if (keysPressed.D === true) {
-    this.gameObjects[0].position.add(new Vec3(1.8 * dt, 0, 0));
+    this.gameObjects[4][4].position.add(new Vec3(1.8 * dt, 0, 0));
   }
   if (keysPressed.A === true) {
-    this.gameObjects[0].position.add(new Vec3(-1.8 * dt, 0, 0));
+    this.gameObjects[4][4].position.add(new Vec3(-1.8 * dt, 0, 0));
   }
   if (keysPressed.S === true) {
-    this.gameObjects[0].position.add(new Vec3(0, -1.8 * dt, 0));
+    this.gameObjects[4][4].position.add(new Vec3(0, -1.8 * dt, 0));
   }
   if (keysPressed.RIGHT === true) {
     this.camera.position.add(new Vec2(0.01, 0));
@@ -83,26 +87,35 @@ Scene.prototype.update = function(gl, keysPressed) {
   if (keysPressed.LEFT === true) {
     this.camera.position.add(new Vec2(-0.01, 0));
   }
+
+  //Quake Feature:
+  //Screen shakes, in each frame each obj stand a .1% chance of elimination.
   if (keysPressed.Q === true) {
-    this.gameObjects[1].scale.mul(1.1);
+    this.camera.position.set(new Vec2(Math.cos(timeAtThisFrame)*.1, 0));
+    for (var i=0;i<this.gridNum;i++) {
+      for(var j=0;j<this.gridNum;j++) {
+        if (Math.random() < 0.001) {
+          this.gameObjects[i][j].scale.set(new Vec3(0, 0, 0));
+        }
+      }
+    }
+    this.gameObjects
   }
+
+
+
+
   if (keysPressed.E === true) {
-    this.gameObjects[1].scale.mul(0.9);
+    this.gameObjects[2][0].scale.mul(0.9);
   }
-
-
-  if (this.trianglePosition.x > 2.5) {
-    this.trianglePosition = new Vec3(-2.5, this.trianglePosition.y, 0);
-  }
-
 
   this.gameObjects.forEach(function(arr) {
     for (var i=0;i<10;i++) {
       var obj = arr[i];
-      if (obj.isRotate == true) {
+      if (obj.isRotate === true) {
         obj.orientation += 0.01;
       }
-      obj.opacity = Math.cos(timeAtThisFrame/80.0);
+      obj.opacity = Math.sin(timeAtThisFrame/80.0) * .6 + .2;
       obj.draw(testCam);
     }
   });
