@@ -15,6 +15,11 @@ let App = function(canvas, overlay) {
 	this.scene = new Scene(this.gl);
 	this.resize();
 	this.keysPressed = {};
+	this.mousePos = {};
+
+	//for gem swap
+	this.startPos = null;
+	this.endPos = null;
 };
 
 // match WebGL rendering resolution and viewport to the canvas size
@@ -38,16 +43,34 @@ App.prototype.registerEventHandlers = function() {
 	};
 	this.canvas.onmousedown = function(event) {
 		//jshint unused:false
+		theApp.mousePos = {pressed: true,
+											 drag: false,
+											 coord: new Vec4(2*(event.clientX/theApp.canvas.clientWidth - .5),
+										   -2*(event.clientY/theApp.canvas.clientHeight - .5), 0, 0)};
+		theApp.startPos = theApp.mousePos.coord;
+		console.log(theApp.startPos.x);
 	};
 	this.canvas.onmousemove = function(event) {
 		//jshint unused:false
 		event.stopPropagation();
+		if (theApp.mousePos.pressed === true) {
+			theApp.mousePos = {pressed: true,
+												 drag: true,
+												 coord: new Vec4(2*(event.clientX/theApp.canvas.clientWidth - .5),
+											   -2*(event.clientY/theApp.canvas.clientHeight - .5), 0, 0)};
+		}
 	};
 	this.canvas.onmouseout = function(event) {
 		//jshint unused:false
 	};
 	this.canvas.onmouseup = function(event) {
 		//jshint unused:false
+		theApp.mousePos = {pressed: false,
+											 drag: false,
+											 coord: new Vec4(2*(event.clientX/theApp.canvas.clientWidth - .5),
+										   -2*(event.clientY/theApp.canvas.clientHeight - .5), 0, 0)};
+		theApp.endPos = theApp.mousePos.coord;
+		console.log(theApp.endPos.x);
 	};
 	window.addEventListener('resize', function() {
 		theApp.resize();
@@ -63,8 +86,15 @@ App.prototype.update = function() {
 	let pendingResourceNames = Object.keys(this.gl.pendingResources);
 	if (pendingResourceNames.length === 0) {
 		// animate and draw scene
-		this.scene.update(this.gl, this.keysPressed);
+		this.scene.update(this.gl, this.keysPressed, this.mousePos);
 		this.overlay.innerHTML = "Computer Graphics is AWESOME.";
+		if (this.startPos !== null && this.endPos !== null) {
+			//this.scene.drag(this.startPos, this.mousePos);
+			this.scene.swap(this.startPos, this.endPos);
+			this.startPos = null;
+			this.endPos = null;
+		}
+
 	} else {
 		this.overlay.innerHTML = "Loading: " + pendingResourceNames;
 	}

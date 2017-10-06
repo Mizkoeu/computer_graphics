@@ -15,24 +15,29 @@ let Scene = function(gl) {
   this.stargeometry = new StarGeometry(gl);
   this.rectGeometry = new RectGeometry(gl);
   this.weirdGometry = new WeirdGeometry(gl);
+  this.textureGeometry = new TexturedQuadGeometry(gl);
 
   //materials
   this.material = new Material(gl, this.solidProgram);
   this.pulsateMaterial = new Material(gl, this.pulsateProgram);
-  this.material.solidColor.set(0.1, 0.3, 0.7, 1);
+  //this.material.solidColor.set(0.1, 0.3, 0.7, 1);
+
+  //texture binding
+  //this.texture = new Texture2D(gl, "./supernova-icon.png");
+  //this.material.colorTexture.set(this.texture.glTexture);
 
   //Create a camera
   this.camera = new OrthoCamera();
 
   //Create object array
   this.gameObjects = [];
+  this.activeObject = null;
   this.gridNum = 10;
   this.cellWidth = 0.18;
   this.inventory = [new Mesh(this.rectGeometry, this.material),
                     new Mesh(this.stargeometry, this.material),
                     new Mesh(this.heartgeometry, this.pulsateMaterial),
                     new Mesh(this.weirdGometry, this.material)];
-
 
   for (var i=0;i<this.gridNum;i++) {
     this.gameObjects[i] = [];
@@ -42,25 +47,71 @@ let Scene = function(gl) {
       if (id === 0) {
         obj.isRotate = true;
       }
-      obj.color.set(Math.random() * .5, Math.random(), .3, .8);
+      obj.color.set(Math.random() * .5, Math.random(), .2, .8);
       obj.scale.set(new Vec3(.8, .8, .8));
-      obj.position.set(this.cellWidth*(i-4.5), this.cellWidth*(4.5-j), 0);
+      obj.setPos(i, j, this.cellWidth)
       this.gameObjects[i][j] = obj;
     }
   }
+
+  this.drag = function(startPos, mousePos) {
+    startPos.mul(this.camera.viewProjMatrix.invert());
+    var x = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
+    var y = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);
+    console.log(x, y);
+    if (mousePos.drag === true) {
+      var mouseCoord = mousePos.coord.mul(this.camera.viewProjMatrix);
+      this.gameObjects[x][y].position.set(mouseCoord);
+    } else {
+      this.gameObjects[x][y].position.set(startPos);
+    }
+  };
+
+  this.swap = function(startPos, endPos) {
+    console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
+    startPos.mul(this.camera.viewProjMatrix.invert());
+    endPos.mul(this.camera.viewProjMatrix);
+    //this.camera.viewProjMatrix.invert();
+    console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
+    var x1 = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
+    var y1 = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);
+    var x2 = Math.floor(this.gridNum/2 + endPos.x/this.cellWidth);
+    var y2 = Math.floor(this.gridNum/2 - endPos.y/this.cellWidth);
+    console.log("swapping between (" + x1 + ", " + y1 + ") and (" + x2 + ", " + y2 + ")!!");
+    if (x1<this.gridNum && x1>=0 && y1<this.gridNum && y1>=0) {
+      if (x2<this.gridNum && x2>=0 && y2<this.gridNum && y2>=0) {
+        if ((Math.abs(x1 - x2) === 1 && y1 === y2)|| (Math.abs(y1 - y2) === 1 && x1 === x2)) {
+          var temp = this.gameObjects[x1][y1];
+          this.gameObjects[x1][y1] = this.gameObjects[x2][y2];
+          this.gameObjects[x2][y2] = temp;
+          this.gameObjects[x1][y1].setPos(x1, y1, this.cellWidth);
+          this.gameObjects[x2][y2].setPos(x2, y2, this.cellWidth);
+        }
+      }
+    }
+  };
+
+  this.dramaticExit = function() {
+
+  };
+
+
+
 };
 
-Scene.prototype.update = function(gl, keysPressed) {
+  //Texture practical
+  //this.gameObjects.push(new GameObject(4, new Mesh(this.textureGeometry, this.material)));
+  //};
+
+Scene.prototype.update = function(gl, keysPressed, mousePos) {
   //jshint bitwise:false
   //jshint unused:false
   let timeAtThisFrame = new Date().getTime();
   let dt = (timeAtThisFrame - this.timeAtLastFrame) / 1000.0;
   this.timeAtLastFrame = timeAtThisFrame;
 
-  console.log(timeAtThisFrame);
-
   // clear the screen
-  gl.clearColor(.2, .3, .6, 1.0);
+  gl.clearColor(.1, .2, .4, 1.0);
   gl.clearDepth(1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -69,23 +120,50 @@ Scene.prototype.update = function(gl, keysPressed) {
 
   var testCam = this.camera;
 
+  // Mouse position calculation
+  // var pos = new Vec4(mousePos.x, mousePos.y, 0, 0);
+  // var mouseCoord = pos.mul(testCam.viewProjMatrix.invert());
+  // var x = Math.floor(this.gridNum/2 + mouseCoord.x/this.cellWidth);
+  // var y = Math.floor(this.gridNum/2 - mouseCoord.y/this.cellWidth);
+
+  //**********************************
+  //********* DEBUG ******************
+  //console.log(mousePos);
+  //console.log("Mouse is at x: " + x + "; y: " + y);
+
+  //drag
+  // if (x<this.gridNum && x>=0 && y<this.gridNum && y>=0) {
+  //   if (mousePos.drag === false && mousePos.pressed === true) {
+  //   //this.activeObject = this.gameObjects[x][y];
+  //   }
+  // }
+  //
+  // if (mousePos.drag === true && this.activeObject !== null) {
+  //   //this.activeObject.position.set(mouseCoord);
+  // }
+  //
+  // //if mouse is up, no active objects is registered
+  // if (mousePos.pressed === false && this.activeObject !== null) {
+  //   //this.activeObject.position.set(this.gameObjects[x][y].position);
+  //   //this.activeObject = null;
+  // }
+
+  //click and disappear!
+  // if (x<this.gridNum && x>=0 && y<this.gridNum && y>=0 && mousePos.pressed === true) {
+  //   this.gameObjects[x][y].scale.set(new Vec3(0, 0, 0));
+  // }
+
   if (keysPressed.W === true) {
     this.gameObjects[4][4].position.add(new Vec3(0, 1.8 * dt, 0));
   }
-  if (keysPressed.D === true) {
-    this.gameObjects[4][4].position.add(new Vec3(1.8 * dt, 0, 0));
-  }
   if (keysPressed.A === true) {
-    this.gameObjects[4][4].position.add(new Vec3(-1.8 * dt, 0, 0));
+    testCam.rotation += 0.05;
+  }
+  if (keysPressed.D === true) {
+    testCam.rotation -= 0.05;
   }
   if (keysPressed.S === true) {
     this.gameObjects[4][4].position.add(new Vec3(0, -1.8 * dt, 0));
-  }
-  if (keysPressed.RIGHT === true) {
-    this.camera.position.add(new Vec2(0.01, 0));
-  }
-  if (keysPressed.LEFT === true) {
-    this.camera.position.add(new Vec2(-0.01, 0));
   }
 
   //Quake Feature:
@@ -102,9 +180,6 @@ Scene.prototype.update = function(gl, keysPressed) {
     this.gameObjects
   }
 
-
-
-
   if (keysPressed.E === true) {
     this.gameObjects[2][0].scale.mul(0.9);
   }
@@ -115,9 +190,10 @@ Scene.prototype.update = function(gl, keysPressed) {
       if (obj.isRotate === true) {
         obj.orientation += 0.01;
       }
-      obj.opacity = Math.sin(timeAtThisFrame/80.0) * .6 + .2;
+      obj.opacity = Math.sin(timeAtThisFrame/150.0) * .5 + .1;
       obj.draw(testCam);
     }
+    //arr.draw(testCam);
   });
 //--> Using MATERIAL to SET MATRIX <---
   // this.material.modelViewProjMatrix.set().rotate(this.triangleRotation)

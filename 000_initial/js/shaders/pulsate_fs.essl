@@ -3,6 +3,6 @@ Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
 	uniform float opacity;
 
 	void main(void) {
-		gl_FragColor = vec4(opacity, .3, .6, 1);
+		gl_FragColor = vec4(opacity, .2-opacity*.2, .4-opacity*.4, 1);
 	}
 `;

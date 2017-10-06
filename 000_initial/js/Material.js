@@ -7,7 +7,7 @@ let Material = function(gl, program) {
     let uniform = program.uniforms[uniformName];
     let reflectionVariable =
         UniformReflectionFactories.makeVar(gl,
-                                uniform.type, uniform.size);
+                                uniform.type, uniform.size, uniform.textureUnit);
     Object.defineProperty(theMaterial, uniformName,
                           {value: reflectionVariable} );
   });
