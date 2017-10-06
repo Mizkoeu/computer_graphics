@@ -55,23 +55,24 @@ let Scene = function(gl) {
   }
 
   this.drag = function(startPos, mousePos) {
-    startPos.mul(this.camera.viewProjMatrix.invert());
+    this.camera.viewProjMatrix.invert();
+    startPos = (new Vec4(startPos, 0)).mul(this.camera.viewProjMatrix);
     var x = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
     var y = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);
     console.log(x, y);
     if (mousePos.drag === true) {
-      var mouseCoord = mousePos.coord.mul(this.camera.viewProjMatrix);
-      this.gameObjects[x][y].position.set(mouseCoord);
+      var mousePos = (new Vec4(mousePos.coord, 0)).mul(this.camera.viewProjMatrix);
+      this.gameObjects[x][y].position.set(new Vec3(mousePos.x, mousePos.y, 0));
     } else {
-      this.gameObjects[x][y].position.set(startPos);
+      this.gameObjects[x][y].setPos(x, y, this.cellWidth);
     }
   };
 
   this.swap = function(startPos, endPos) {
     console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
-    startPos.mul(this.camera.viewProjMatrix.invert());
-    endPos.mul(this.camera.viewProjMatrix);
     //this.camera.viewProjMatrix.invert();
+    startPos = (new Vec4(startPos, 0)).mul(this.camera.viewProjMatrix);
+    endPos = (new Vec4(endPos, 0)).mul(this.camera.viewProjMatrix);
     console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
     var x1 = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
     var y1 = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);

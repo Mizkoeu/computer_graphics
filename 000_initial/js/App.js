@@ -45,8 +45,8 @@ App.prototype.registerEventHandlers = function() {
 		//jshint unused:false
 		theApp.mousePos = {pressed: true,
 											 drag: false,
-											 coord: new Vec4(2*(event.clientX/theApp.canvas.clientWidth - .5),
-										   -2*(event.clientY/theApp.canvas.clientHeight - .5), 0, 0)};
+											 coord: new Vec3(2*(event.clientX/theApp.canvas.clientWidth - .5),
+										   								-2*(event.clientY/theApp.canvas.clientHeight - .5), 0)};
 		theApp.startPos = theApp.mousePos.coord;
 		console.log(theApp.startPos.x);
 	};
@@ -56,8 +56,8 @@ App.prototype.registerEventHandlers = function() {
 		if (theApp.mousePos.pressed === true) {
 			theApp.mousePos = {pressed: true,
 												 drag: true,
-												 coord: new Vec4(2*(event.clientX/theApp.canvas.clientWidth - .5),
-											   -2*(event.clientY/theApp.canvas.clientHeight - .5), 0, 0)};
+												 coord: new Vec3(2*(event.clientX/theApp.canvas.clientWidth - .5),
+											   						    -2*(event.clientY/theApp.canvas.clientHeight - .5), 0)};
 		}
 	};
 	this.canvas.onmouseout = function(event) {
@@ -67,8 +67,8 @@ App.prototype.registerEventHandlers = function() {
 		//jshint unused:false
 		theApp.mousePos = {pressed: false,
 											 drag: false,
-											 coord: new Vec4(2*(event.clientX/theApp.canvas.clientWidth - .5),
-										   -2*(event.clientY/theApp.canvas.clientHeight - .5), 0, 0)};
+											 coord: new Vec3(2*(event.clientX/theApp.canvas.clientWidth - .5),
+										   					      -2*(event.clientY/theApp.canvas.clientHeight - .5), 0)};
 		theApp.endPos = theApp.mousePos.coord;
 		console.log(theApp.endPos.x);
 	};
@@ -88,11 +88,13 @@ App.prototype.update = function() {
 		// animate and draw scene
 		this.scene.update(this.gl, this.keysPressed, this.mousePos);
 		this.overlay.innerHTML = "Computer Graphics is AWESOME.";
-		if (this.startPos !== null && this.endPos !== null) {
-			//this.scene.drag(this.startPos, this.mousePos);
-			this.scene.swap(this.startPos, this.endPos);
-			this.startPos = null;
-			this.endPos = null;
+		if (this.startPos !== null) {
+			this.scene.drag(this.startPos, this.mousePos);
+			if (this.endPos !== null) {
+				this.scene.swap(this.startPos, this.endPos);
+				//this.startPos = null;
+				this.endPos = null;
+			}
 		}
 
 	} else {
