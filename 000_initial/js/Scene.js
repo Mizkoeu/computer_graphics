@@ -82,7 +82,7 @@ let Scene = function(gl) {
           var temp = this.gameObjects[x1][y1];
           this.gameObjects[x1][y1] = this.gameObjects[x2][y2];
           this.gameObjects[x2][y2] = temp;
-          if (this.checkTriple(x1, y1) || this.checkTriple(x2, y2)) {
+          if (this.checkLegal(x1, y1) || this.checkLegal(x2, y2)) {
             this.gameObjects[x1][y1].setPos(x1, y1, this.cellWidth);
             this.gameObjects[x2][y2].setPos(x2, y2, this.cellWidth);
           } else {
@@ -123,22 +123,17 @@ let Scene = function(gl) {
     }
   };
 
-  this.checkTriple = function(i, j) {
+  this.checkLegal = function(i, j) {
     if (this.gameObjects[i][j] !== null) {
       let ID = this.gameObjects[i][j].id;
       var rowIdentical = 1;
-      var rowStart = i;
       var colIdentical = 1;
-      var colStart = j;
-      for (var row=i-1;row>=0 && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row--,rowStart--,rowIdentical++);
+      for (var row=i-1;row>=0 && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row--,rowIdentical++);
       for (var row=i+1;row<this.gridNum && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row++,rowIdentical++);
-      if (rowIdentical >= 3) {
-        return true;
-      }
 
-      for (var col=j-1;col>=0 && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col--,colStart--,colIdentical++);
+      for (var col=j-1;col>=0 && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col--,colIdentical++);
       for (var col=j+1;col<this.gridNum && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col++,colIdentical++);
-      if (colIdentical >= 3) {
+      if (rowIdentical >= 3 || colIdentical >= 3) {
         return true;
       }
     }
@@ -161,8 +156,8 @@ Scene.prototype.dramaticExit = function() {
           if (obj.toDestroy === true) {
             if (obj.scale.x >= 0) {
               status = true;
-              obj.scale.add(new Vec3(-0.1, -0.1, -0.1));
-              obj.orientation += .3;
+              obj.scale.add(new Vec3(-0.08, -0.08, -0.08));
+              obj.orientation += .5;
             } else {
               this.gameObjects[x][y] = null;
             }
