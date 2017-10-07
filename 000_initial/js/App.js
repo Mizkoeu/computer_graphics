@@ -97,7 +97,9 @@ App.prototype.update = function() {
 			}
 		}
 		this.scene.bomb(this.keysPressed, this.mousePos, this.startPos);
-		this.scene.dramaticExit();
+		if (this.scene.dramaticExit() === false) {
+			this.scene.checkLine();
+		}
 		this.scene.skyFall();
 	} else {
 		this.overlay.innerHTML = "Loading: " + pendingResourceNames;

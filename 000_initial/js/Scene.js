@@ -82,8 +82,13 @@ let Scene = function(gl) {
           var temp = this.gameObjects[x1][y1];
           this.gameObjects[x1][y1] = this.gameObjects[x2][y2];
           this.gameObjects[x2][y2] = temp;
-          this.gameObjects[x1][y1].setPos(x1, y1, this.cellWidth);
-          this.gameObjects[x2][y2].setPos(x2, y2, this.cellWidth);
+          if (this.checkTriple(x1, y1) || this.checkTriple(x2, y2)) {
+            this.gameObjects[x1][y1].setPos(x1, y1, this.cellWidth);
+            this.gameObjects[x2][y2].setPos(x2, y2, this.cellWidth);
+          } else {
+            this.gameObjects[x2][y2] = this.gameObjects[x1][y1];
+            this.gameObjects[x1][y1] = temp;
+          }
         }
       }
     }
@@ -92,23 +97,52 @@ let Scene = function(gl) {
   this.checkLine = function() {
     for (var i=0;i<this.gridNum;i++) {
       for(var j=0;j<this.gridNum;j++) {
-        if (this.gameObjects[i][j] === null) {
-        // for (var n=j;n>0;n--) {
-        //   if (this.gameObjects[i][n-1] !== null) {
-        //     this.gameObjects[i][n] = this.gameObjects[i][n-1];
-        //     this.gameObjects[i][n].setPos(i, n, this.cellWidth);
-        //   }
-        // }
-         if (j !== 0) {
-           this.gameObjects[i][j] = this.gameObjects[i][j-1];
-           this.gameObjects[i][j-1] = null;
-           this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
-         } else {
-           this.createNew(i, j);
-         }
+        if (this.gameObjects[i][j] !== null) {
+          let ID = this.gameObjects[i][j].id;
+          var rowIdentical = 1;
+          var rowStart = i;
+          var colIdentical = 1;
+          var colStart = j;
+          for (var row=i-1;row>=0 && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row--,rowStart--,rowIdentical++);
+          for (var row=i+1;row<this.gridNum && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row++,rowIdentical++);
+          if (rowIdentical >= 3) {
+            for (var n=0;n<rowIdentical;n++,rowStart++) {
+              this.gameObjects[rowStart][j].toDestroy = true;
+            }
+          }
+
+          for (var col=j-1;col>=0 && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col--,colStart--,colIdentical++);
+          for (var col=j+1;col<this.gridNum && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col++,colIdentical++);
+          if (colIdentical >= 3) {
+            for (var n=0;n<colIdentical;n++,colStart++) {
+              this.gameObjects[i][colStart].toDestroy = true;
+            }
+          }
         }
       }
     }
+  };
+
+  this.checkTriple = function(i, j) {
+    if (this.gameObjects[i][j] !== null) {
+      let ID = this.gameObjects[i][j].id;
+      var rowIdentical = 1;
+      var rowStart = i;
+      var colIdentical = 1;
+      var colStart = j;
+      for (var row=i-1;row>=0 && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row--,rowStart--,rowIdentical++);
+      for (var row=i+1;row<this.gridNum && this.gameObjects[row][j] !== null && this.gameObjects[row][j].id === ID;row++,rowIdentical++);
+      if (rowIdentical >= 3) {
+        return true;
+      }
+
+      for (var col=j-1;col>=0 && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col--,colStart--,colIdentical++);
+      for (var col=j+1;col<this.gridNum && this.gameObjects[i][col] !== null && this.gameObjects[i][col].id === ID;col++,colIdentical++);
+      if (colIdentical >= 3) {
+        return true;
+      }
+    }
+    return false;
   };
 
 
@@ -119,12 +153,14 @@ let Scene = function(gl) {
   //this.gameObjects.push(new GameObject(4, new Mesh(this.textureGeometry, this.material)));
   //};
 Scene.prototype.dramaticExit = function() {
+  var status = false;
     for (var x=0;x<this.gridNum;x++) {
       for (var y=0;y<this.gridNum;y++) {
         let obj = this.gameObjects[x][y];
         if (obj !== null) {
           if (obj.toDestroy === true) {
             if (obj.scale.x >= 0) {
+              status = true;
               obj.scale.add(new Vec3(-0.1, -0.1, -0.1));
               obj.orientation += .3;
             } else {
@@ -134,6 +170,7 @@ Scene.prototype.dramaticExit = function() {
         }
       }
     }
+  return status;
 };
 
 Scene.prototype.createNew = function(i, j) {

@@ -11,7 +11,7 @@ let GameObject = function(id, mesh) {
       let y = this.targetPos.y;
       let targetPos = new Vec3(cellWidth*(x-4.5), cellWidth*(4.5-y), 0);
       if (this.position.y > targetPos.y) {
-        this.position.add(new Vec3(0, -.01, 0));
+        this.position.add(new Vec3(0, -.02, 0));
       } else {
         this.position.set(targetPos);
         this.targetPos = null;
