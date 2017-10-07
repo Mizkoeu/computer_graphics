@@ -42,15 +42,7 @@ let Scene = function(gl) {
   for (var i=0;i<this.gridNum;i++) {
     this.gameObjects[i] = [];
     for(var j=0;j<this.gridNum;j++) {
-      var id = Math.floor(Math.random() * 4);
-      var obj = new GameObject(id, this.inventory[id]);
-      if (id === 0) {
-        obj.isRotate = true;
-      }
-      obj.color.set(Math.random() * .5, Math.random(), .2, .8);
-      obj.scale.set(new Vec3(.8, .8, .8));
-      obj.setPos(i, j, this.cellWidth)
-      this.gameObjects[i][j] = obj;
+      this.createNew(i, j);
     }
   }
 
@@ -60,20 +52,25 @@ let Scene = function(gl) {
     var x = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
     var y = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);
     console.log(x, y);
-    if (mousePos.drag === true) {
-      var mousePos = (new Vec4(mousePos.coord, 0)).mul(this.camera.viewProjMatrix);
-      this.gameObjects[x][y].position.set(new Vec3(mousePos.x, mousePos.y, 0));
-    } else {
-      this.gameObjects[x][y].setPos(x, y, this.cellWidth);
+    if (x < this.gridNum && y < this.gridNum && x >= 0 && y >= 0) {
+      let obj = this.gameObjects[x][y];
+      if (obj !== null && obj.toDestroy === false) {
+        if (mousePos.drag === true) {
+          var mousePos = (new Vec4(mousePos.coord, 0)).mul(this.camera.viewProjMatrix);
+          obj.position.set(new Vec3(mousePos.x, mousePos.y, 0));
+        } else {
+          obj.setPos(x, y, this.cellWidth);
+        }
+      }
     }
   };
 
   this.swap = function(startPos, endPos) {
-    console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
+    //console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
     //this.camera.viewProjMatrix.invert();
     startPos = (new Vec4(startPos, 0)).mul(this.camera.viewProjMatrix);
     endPos = (new Vec4(endPos, 0)).mul(this.camera.viewProjMatrix);
-    console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
+    //console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
     var x1 = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
     var y1 = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);
     var x2 = Math.floor(this.gridNum/2 + endPos.x/this.cellWidth);
@@ -92,8 +89,26 @@ let Scene = function(gl) {
     }
   };
 
-  this.dramaticExit = function() {
-
+  this.checkLine = function() {
+    for (var i=0;i<this.gridNum;i++) {
+      for(var j=0;j<this.gridNum;j++) {
+        if (this.gameObjects[i][j] === null) {
+        // for (var n=j;n>0;n--) {
+        //   if (this.gameObjects[i][n-1] !== null) {
+        //     this.gameObjects[i][n] = this.gameObjects[i][n-1];
+        //     this.gameObjects[i][n].setPos(i, n, this.cellWidth);
+        //   }
+        // }
+         if (j !== 0) {
+           this.gameObjects[i][j] = this.gameObjects[i][j-1];
+           this.gameObjects[i][j-1] = null;
+           this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
+         } else {
+           this.createNew(i, j);
+         }
+        }
+      }
+    }
   };
 
 
@@ -103,6 +118,64 @@ let Scene = function(gl) {
   //Texture practical
   //this.gameObjects.push(new GameObject(4, new Mesh(this.textureGeometry, this.material)));
   //};
+Scene.prototype.dramaticExit = function() {
+    for (var x=0;x<this.gridNum;x++) {
+      for (var y=0;y<this.gridNum;y++) {
+        let obj = this.gameObjects[x][y];
+        if (obj !== null) {
+          if (obj.toDestroy === true) {
+            if (obj.scale.x >= 0) {
+              obj.scale.add(new Vec3(-0.1, -0.1, -0.1));
+              obj.orientation += .3;
+            } else {
+              this.gameObjects[x][y] = null;
+            }
+          }
+        }
+      }
+    }
+};
+
+Scene.prototype.createNew = function(i, j) {
+    var id = Math.floor(Math.random() * 4);
+    var obj = new GameObject(id, this.inventory[id]);
+    if (id === 0) {
+      obj.isRotate = true;
+    }
+    obj.color.set(Math.random() * .5, Math.random(), .2, .8);
+    obj.scale.set(new Vec3(.8, .8, .8));
+    obj.setPos(i, j, this.cellWidth)
+    this.gameObjects[i][j] = obj;
+  };
+
+Scene.prototype.skyFall = function() {
+    for (var i=0;i<this.gridNum;i++) {
+      for(var j=0;j<this.gridNum;j++) {
+        if (this.gameObjects[i][j] === null) {
+         if (j !== 0) {
+           this.gameObjects[i][j] = this.gameObjects[i][j-1];
+           this.gameObjects[i][j-1] = null;
+           this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
+         } else {
+           this.createNew(i, j);
+         }
+        }
+      }
+    }
+};
+
+Scene.prototype.bomb = function(keysPressed, mousePos, startPos) {
+  //Bomb feature
+  if (keysPressed.B === true && mousePos.pressed === true && mousePos.drag === false) {
+    //this.camera.viewProjMatrix.invert();
+    var startPos = (new Vec4(startPos, 0)).mul(this.camera.viewProjMatrix);
+    var x = Math.floor(this.gridNum/2 + startPos.x/this.cellWidth);
+    var y = Math.floor(this.gridNum/2 - startPos.y/this.cellWidth);
+    console.log("new x, y at bomb: " + x + ", " + y);
+
+    this.gameObjects[x][y].toDestroy = true;
+  }
+};
 
 Scene.prototype.update = function(gl, keysPressed, mousePos) {
   //jshint bitwise:false
@@ -154,9 +227,6 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
   //   this.gameObjects[x][y].scale.set(new Vec3(0, 0, 0));
   // }
 
-  if (keysPressed.W === true) {
-    this.gameObjects[4][4].position.add(new Vec3(0, 1.8 * dt, 0));
-  }
   if (keysPressed.A === true) {
     testCam.rotation += 0.05;
   }
@@ -170,11 +240,11 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
   //Quake Feature:
   //Screen shakes, in each frame each obj stand a .1% chance of elimination.
   if (keysPressed.Q === true) {
-    this.camera.position.set(new Vec2(Math.cos(timeAtThisFrame)*.1, 0));
+    this.camera.position.set(new Vec2(Math.cos(timeAtThisFrame)*.05, 0));
     for (var i=0;i<this.gridNum;i++) {
       for(var j=0;j<this.gridNum;j++) {
         if (Math.random() < 0.001) {
-          this.gameObjects[i][j].scale.set(new Vec3(0, 0, 0));
+          this.gameObjects[i][j].toDestroy = true;;
         }
       }
     }
@@ -185,14 +255,19 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
     this.gameObjects[2][0].scale.mul(0.9);
   }
 
+  //drawing the shapes!!!
+  let theScene = this;
   this.gameObjects.forEach(function(arr) {
     for (var i=0;i<10;i++) {
       var obj = arr[i];
-      if (obj.isRotate === true) {
-        obj.orientation += 0.01;
+      if (obj !== null) {
+        obj.move(theScene.cellWidth);
+        if (obj.isRotate === true) {
+          obj.orientation += 0.01;
+        }
+        obj.opacity = Math.sin(timeAtThisFrame/150.0) * .5 + .1;
+        obj.draw(testCam);
       }
-      obj.opacity = Math.sin(timeAtThisFrame/150.0) * .5 + .1;
-      obj.draw(testCam);
     }
     //arr.draw(testCam);
   });

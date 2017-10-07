@@ -3,11 +3,25 @@ let GameObject = function(id, mesh) {
   this.id = id;
   this.mesh = mesh;
 
-  this.selected = false;
+  this.toDestroy = false;
+  this.targetPos = null;
+  this.move = function(cellWidth) {
+    if (this.targetPos !== null) {
+      let x = this.targetPos.x;
+      let y = this.targetPos.y;
+      let targetPos = new Vec3(cellWidth*(x-4.5), cellWidth*(4.5-y), 0);
+      if (this.position.y > targetPos.y) {
+        this.position.add(new Vec3(0, -.01, 0));
+      } else {
+        this.position.set(targetPos);
+        this.targetPos = null;
+      }
+    }
+  };
 
   this.position = new Vec3(0, 0, 0);
   this.orientation = 0;
-  this.scale = new Vec3(1, 1, 1);
+  this.scale = new Vec3(0, 0, 0);
   this.color = new Vec4(0, 0, 0, 0);
 
   this.isRotate = false;
