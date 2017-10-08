@@ -181,6 +181,35 @@ Scene.prototype.createNew = function(i, j) {
   };
 
 Scene.prototype.skyFall = function() {
+  if (this.camera.rotation >= Math.PI/4) {
+    for (var j=0;j<this.gridNum;j++) {
+      for(var i=0;i<this.gridNum;i++) {
+        if (this.gameObjects[i][j] === null) {
+         if (i !== 0) {
+           this.gameObjects[i][j] = this.gameObjects[i-1][j];
+           this.gameObjects[i-1][j] = null;
+           this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
+         } else {
+           this.createNew(i, j);
+         }
+        }
+      }
+    }
+  } else if (this.camera.rotation <= -Math.PI/4) {
+    for (var j=0;j<this.gridNum;j++) {
+      for(var i=this.gridNum-1;i>=0;i--) {
+        if (this.gameObjects[i][j] === null) {
+         if (i !== this.gridNum-1) {
+           this.gameObjects[i][j] = this.gameObjects[i+1][j];
+           this.gameObjects[i+1][j] = null;
+           this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
+         } else {
+           this.createNew(i, j);
+         }
+        }
+      }
+    }
+  } else {
     for (var i=0;i<this.gridNum;i++) {
       for(var j=0;j<this.gridNum;j++) {
         if (this.gameObjects[i][j] === null) {
@@ -194,6 +223,7 @@ Scene.prototype.skyFall = function() {
         }
       }
     }
+  }
 };
 
 Scene.prototype.bomb = function(keysPressed, mousePos, startPos) {
@@ -260,13 +290,18 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
   // }
 
   if (keysPressed.A === true) {
-    testCam.rotation += 0.05;
+    if (testCam.rotation <= Math.PI/2.0) {
+      testCam.rotation += 0.05;
+    } else {
+      testCam.rotation = Math.PI/2;
+    }
   }
   if (keysPressed.D === true) {
-    testCam.rotation -= 0.05;
-  }
-  if (keysPressed.S === true) {
-    this.gameObjects[4][4].position.add(new Vec3(0, -1.8 * dt, 0));
+    if (testCam.rotation >= -Math.PI/2.0) {
+      testCam.rotation -= 0.05;
+    } else {
+      testCam.rotation = -Math.PI/2;
+    }
   }
 
   //Quake Feature:
@@ -275,7 +310,7 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
     this.camera.position.set(new Vec2(Math.cos(timeAtThisFrame)*.05, 0));
     for (var i=0;i<this.gridNum;i++) {
       for(var j=0;j<this.gridNum;j++) {
-        if (Math.random() < 0.001) {
+        if (Math.random() < 0.001 && this.gameObjects[i][j] !== null) {
           this.gameObjects[i][j].toDestroy = true;;
         }
       }
