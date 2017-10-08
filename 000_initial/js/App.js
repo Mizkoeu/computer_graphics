@@ -96,11 +96,12 @@ App.prototype.update = function() {
 				this.endPos = null;
 			}
 		}
-		this.scene.bomb(this.keysPressed, this.mousePos, this.startPos);
-		if (this.scene.dramaticExit() === false) {
+		
+		if (this.scene.dramaticExit() === false && this.scene.bomb(this.keysPressed, this.mousePos, this.startPos) === false) {
 			this.scene.checkLine();
+			this.scene.skyFall();
 		}
-		this.scene.skyFall();
+
 	} else {
 		this.overlay.innerHTML = "Loading: " + pendingResourceNames;
 	}

@@ -236,7 +236,12 @@ Scene.prototype.bomb = function(keysPressed, mousePos, startPos) {
     console.log("new x, y at bomb: " + x + ", " + y);
 
     this.gameObjects[x][y].toDestroy = true;
+
+    return true;
+  } else {
+    return false;
   }
+
 };
 
 Scene.prototype.update = function(gl, keysPressed, mousePos) {
