@@ -96,10 +96,13 @@ App.prototype.update = function() {
 				this.endPos = null;
 			}
 		}
-		
-		if (this.scene.dramaticExit() === false && this.scene.bomb(this.keysPressed, this.mousePos, this.startPos) === false) {
-			this.scene.checkLine();
-			this.scene.skyFall();
+
+		if (this.scene.dramaticExit() === false) {
+			if (this.scene.skyFall() === false) {
+				if (this.scene.bomb(this.keysPressed, this.mousePos, this.startPos) === false) {
+				this.scene.checkLine();
+				}
+			}
 		}
 
 	} else {

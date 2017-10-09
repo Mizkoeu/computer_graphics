@@ -39,6 +39,7 @@ let Scene = function(gl) {
                     new Mesh(this.heartgeometry, this.pulsateMaterial),
                     new Mesh(this.weirdGometry, this.material)];
 
+  //Initialize the 2DArray of objects randomly.
   for (var i=0;i<this.gridNum;i++) {
     this.gameObjects[i] = [];
     for(var j=0;j<this.gridNum;j++) {
@@ -46,6 +47,8 @@ let Scene = function(gl) {
     }
   }
 
+
+  //drag feature where the object follows the mouse if dragged.
   this.drag = function(startPos, mousePos) {
     this.camera.viewProjMatrix.invert();
     startPos = (new Vec4(startPos, 0)).mul(this.camera.viewProjMatrix);
@@ -65,6 +68,7 @@ let Scene = function(gl) {
     }
   };
 
+  //Swap feature with Sticky drag
   this.swap = function(startPos, endPos) {
     //console.log("I got these: (" + startPos.x + ", " + startPos.y + ") and (" + endPos.x + ", " + endPos.y + ")!!");
     //this.camera.viewProjMatrix.invert();
@@ -94,6 +98,8 @@ let Scene = function(gl) {
     }
   };
 
+  //check if there are at least three identical objects on the same line
+  //If so, the respective objects are marked 'toDestroy'.
   this.checkLine = function() {
     for (var i=0;i<this.gridNum;i++) {
       for(var j=0;j<this.gridNum;j++) {
@@ -123,6 +129,8 @@ let Scene = function(gl) {
     }
   };
 
+  //Check if the swap can result in any three-in-line at all.
+  //If not, then the object returns to original pos after mouse release.
   this.checkLegal = function(i, j) {
     if (this.gameObjects[i][j] !== null) {
       let ID = this.gameObjects[i][j].id;
@@ -139,14 +147,10 @@ let Scene = function(gl) {
     }
     return false;
   };
-
-
-
 };
 
-  //Texture practical
-  //this.gameObjects.push(new GameObject(4, new Mesh(this.textureGeometry, this.material)));
-  //};
+
+//Fancy dramaticExit feature, with rotation and shrinking scale before disapperance.
 Scene.prototype.dramaticExit = function() {
   var status = false;
     for (var x=0;x<this.gridNum;x++) {
@@ -168,6 +172,8 @@ Scene.prototype.dramaticExit = function() {
   return status;
 };
 
+
+//A method for creating new object at a given coordinate.
 Scene.prototype.createNew = function(i, j) {
     var id = Math.floor(Math.random() * 4);
     var obj = new GameObject(id, this.inventory[id]);
@@ -180,14 +186,28 @@ Scene.prototype.createNew = function(i, j) {
     this.gameObjects[i][j] = obj;
   };
 
+
+//SkyFall and Feather fall features implemented here
 Scene.prototype.skyFall = function() {
+  var status = false;
   if (this.camera.rotation >= Math.PI/4) {
-    for (var j=0;j<this.gridNum;j++) {
-      for(var i=0;i<this.gridNum;i++) {
+    //console.log("hey look here");
+    for (var j=this.gridNum-1;j>=0;j--) {
+      for (var i=this.gridNum-1;i>=0;i--) {
         if (this.gameObjects[i][j] === null) {
+         status = true;
          if (i !== 0) {
-           this.gameObjects[i][j] = this.gameObjects[i-1][j];
-           this.gameObjects[i-1][j] = null;
+           var n = i-1;
+           while (n >= 0) {
+             if (n === 0 && this.gameObjects[n][j] === null) {
+               this.createNew(n, j);
+               break;
+             } else if (this.gameObjects[n][j] === null) {
+               n--;
+             } else {break;}
+           }
+           this.gameObjects[i][j] = this.gameObjects[n][j];
+           this.gameObjects[n][j] = null;
            this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
          } else {
            this.createNew(i, j);
@@ -197,11 +217,21 @@ Scene.prototype.skyFall = function() {
     }
   } else if (this.camera.rotation <= -Math.PI/4) {
     for (var j=0;j<this.gridNum;j++) {
-      for(var i=this.gridNum-1;i>=0;i--) {
+      for (var i=0;i<this.gridNum;i++) {
         if (this.gameObjects[i][j] === null) {
+         status = true;
          if (i !== this.gridNum-1) {
-           this.gameObjects[i][j] = this.gameObjects[i+1][j];
-           this.gameObjects[i+1][j] = null;
+           var n = i+1;
+           while (n < this.gridNum) {
+             if (n === this.gridNum - 1 && this.gameObjects[n][j] === null) {
+               this.createNew(n, j);
+               break;
+             } else if (this.gameObjects[n][j] === null) {
+               n++;
+             } else {break;}
+           }
+           this.gameObjects[i][j] = this.gameObjects[n][j];
+           this.gameObjects[n][j] = null;
            this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
          } else {
            this.createNew(i, j);
@@ -210,12 +240,23 @@ Scene.prototype.skyFall = function() {
       }
     }
   } else {
-    for (var i=0;i<this.gridNum;i++) {
+    for (var i=this.gridNum-1;i>=0;i--) {
       for(var j=0;j<this.gridNum;j++) {
         if (this.gameObjects[i][j] === null) {
+         status = true;
          if (j !== 0) {
-           this.gameObjects[i][j] = this.gameObjects[i][j-1];
-           this.gameObjects[i][j-1] = null;
+           var n = j-1;
+           while (n >= 0) {
+             if (n === 0 && this.gameObjects[i][n] === null) {
+               this.createNew(i, n);
+               break;
+             } else if (this.gameObjects[i][n] === null) {
+               n--;
+             } else {break;}
+           }
+           this.gameObjects[i][j] = this.gameObjects[i][n];
+           this.gameObjects[i][n] = null;
+           console.log("pos: " + i + "," + n + "\n");
            this.gameObjects[i][j].targetPos = new Vec3(i, j, 0);
          } else {
            this.createNew(i, j);
@@ -224,6 +265,7 @@ Scene.prototype.skyFall = function() {
       }
     }
   }
+  return status;
 };
 
 Scene.prototype.bomb = function(keysPressed, mousePos, startPos) {
@@ -261,43 +303,12 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
 
   var testCam = this.camera;
 
-  // Mouse position calculation
-  // var pos = new Vec4(mousePos.x, mousePos.y, 0, 0);
-  // var mouseCoord = pos.mul(testCam.viewProjMatrix.invert());
-  // var x = Math.floor(this.gridNum/2 + mouseCoord.x/this.cellWidth);
-  // var y = Math.floor(this.gridNum/2 - mouseCoord.y/this.cellWidth);
-
-  //**********************************
-  //********* DEBUG ******************
-  //console.log(mousePos);
-  //console.log("Mouse is at x: " + x + "; y: " + y);
-
-  //drag
-  // if (x<this.gridNum && x>=0 && y<this.gridNum && y>=0) {
-  //   if (mousePos.drag === false && mousePos.pressed === true) {
-  //   //this.activeObject = this.gameObjects[x][y];
-  //   }
-  // }
-  //
-  // if (mousePos.drag === true && this.activeObject !== null) {
-  //   //this.activeObject.position.set(mouseCoord);
-  // }
-  //
-  // //if mouse is up, no active objects is registered
-  // if (mousePos.pressed === false && this.activeObject !== null) {
-  //   //this.activeObject.position.set(this.gameObjects[x][y].position);
-  //   //this.activeObject = null;
-  // }
-
-  //click and disappear!
-  // if (x<this.gridNum && x>=0 && y<this.gridNum && y>=0 && mousePos.pressed === true) {
-  //   this.gameObjects[x][y].scale.set(new Vec3(0, 0, 0));
-  // }
-
+  //Table turn feature, where the entire camera angle rotates
   if (keysPressed.A === true) {
     if (testCam.rotation <= Math.PI/2.0) {
       testCam.rotation += 0.05;
     } else {
+      //make sure the rotation angle does not exceed 90 deg.
       testCam.rotation = Math.PI/2;
     }
   }
@@ -305,6 +316,7 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
     if (testCam.rotation >= -Math.PI/2.0) {
       testCam.rotation -= 0.05;
     } else {
+      //make sure the rotation angle does not exceed 90 deg.
       testCam.rotation = -Math.PI/2;
     }
   }
@@ -320,17 +332,12 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
         }
       }
     }
-    this.gameObjects
-  }
-
-  if (keysPressed.E === true) {
-    this.gameObjects[2][0].scale.mul(0.9);
   }
 
   //drawing the shapes!!!
   let theScene = this;
   this.gameObjects.forEach(function(arr) {
-    for (var i=0;i<10;i++) {
+    for (var i=0;i<theScene.gridNum;i++) {
       var obj = arr[i];
       if (obj !== null) {
         obj.move(theScene.cellWidth);
@@ -341,8 +348,10 @@ Scene.prototype.update = function(gl, keysPressed, mousePos) {
         obj.draw(testCam);
       }
     }
-    //arr.draw(testCam);
   });
+
+//The rest is from the first 2 weeks of practicals!
+
 //--> Using MATERIAL to SET MATRIX <---
   // this.material.modelViewProjMatrix.set().rotate(this.triangleRotation)
   //                                .translate(this.trianglePosition)
