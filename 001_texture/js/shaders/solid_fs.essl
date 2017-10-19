@@ -1,0 +1,15 @@
+Shader.source[document.currentScript.src.split('js/shaders/')[1]] = `
+	precision highp float;
+	varying vec2 texCoord;
+	varying vec2 worldPos;
+	varying vec3 worldNormal;
+	uniform sampler2D colorTexture;
+
+	void main(void) {
+		vec3 light = vec3(1, 1, 1);
+		float cosTheta = dot(normalize(light), normalize(worldNormal));
+		//gl_FragColor = texture2D(colorTexture, texCoord).rgb;
+
+		gl_FragColor = vec4 (texture2D(colorTexture, texCoord).rgb * cosTheta, 1);
+	}
+`;
