@@ -28,6 +28,13 @@ let Scene = function(gl) {
   //Create a camera
   this.camera = new PerspectiveCamera();
 
+  //Array of Light sources
+  this.lightSource = new Vec4Array(2);
+  this.lightSource.at(0).set(1, 1, 1, 0);
+  this.lightSource.at(1).set(0, -1, -1, 0);
+
+  //this.bodyMaterial.lightPos.set(this.lightSource);
+
   //Create object array
   this.mesh = new Mesh(this.textureGeometry, this.material);
   this.materials = [];
@@ -59,8 +66,8 @@ Scene.prototype.update = function(gl, keysPressed) {
   this.camera.move(dt, keysPressed);
 
   //drawing the shapes!!!
-  this.renderObject.draw(this.camera);
-  this.newPoke.draw(this.camera);
+  this.renderObject.draw(this.camera, this.lightSource);
+  this.newPoke.draw(this.camera, this.lightSource);
 
 //The rest is from the first 2 weeks of practicals!
 

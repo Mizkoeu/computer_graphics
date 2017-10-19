@@ -16,9 +16,10 @@ GameObject.prototype.updateModelMatrix = function(){
   this.modelMatrix.set().rotate(this.orientation).scale(this.scale).translate(this.position);
 };
 
-GameObject.prototype.draw = function(camera){
+GameObject.prototype.draw = function(camera, lightSource){
   this.updateModelMatrix();
   //camera.updateViewProjMatrix();
   this.mesh.setUniform("modelViewProjMatrix", (new Mat4()).mul(this.modelMatrix).mul(camera.viewProjMatrix));
+  this.mesh.setUniform("lightPos", lightSource);
   this.mesh.draw();
 };
