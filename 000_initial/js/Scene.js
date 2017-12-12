@@ -180,7 +180,7 @@ Scene.prototype.createNew = function(i, j) {
     if (id === 0) {
       obj.isRotate = true;
     }
-    obj.color.set(Math.random() * .5, Math.random(), .2, .8);
+    obj.color.set(Math.random() * .5, Math.random(), .2, .2);
     obj.scale.set(new Vec3(.8, .8, .8));
     obj.setPos(i, j, this.cellWidth)
     this.gameObjects[i][j] = obj;
